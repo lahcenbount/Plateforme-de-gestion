@@ -5,15 +5,22 @@ export default function ItemsList() {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    // Charger les éléments depuis localStorage
-    const storedItems = JSON.parse(localStorage.getItem("items")) || [];
-    setItems(storedItems);
+    try {
+      // Charger les éléments depuis localStorage
+      const storedItems = JSON.parse(localStorage.getItem("items")) || [];
+      setItems(storedItems);
+    } catch (error) {
+      console.error("Erreur lors du chargement des éléments :", error);
+      setItems([]);
+    }
   }, []);
 
   const handleRemoveItem = (id) => {
-    const updatedItems = items.filter((item) => item.id !== id);
-    localStorage.setItem("items", JSON.stringify(updatedItems));
-    setItems(updatedItems);
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet élément ?")) {
+      const updatedItems = items.filter((item) => item.id !== id);
+      localStorage.setItem("items", JSON.stringify(updatedItems));
+      setItems(updatedItems);
+    }
   };
 
   return (
@@ -26,14 +33,25 @@ export default function ItemsList() {
         ) : (
           <div className="flex flex-wrap gap-6">
             {items.map((item) => (
-              <div key={item.id} className="flex-none w-64 p-4 border border-gray-300 rounded-md shadow-md">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-40 object-cover rounded-md mb-4"
-                  style={{ maxHeight: "300px", objectFit: "cover" }}
-                />
-                <h3 className="text-xl font-semibold">{item.title}</h3>
+              <div
+                key={item.id}
+                className="flex-none w-64 p-4 border border-gray-300 rounded-md shadow-md"
+              >
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.title || "Image de l’élément"}
+                    className="w-full h-40 object-cover rounded-md mb-4"
+                    style={{ maxHeight: "300px", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div className="w-full h-40 bg-gray-200 flex items-center justify-center rounded-md mb-4">
+                    <span className="text-gray-500">Pas d’image</span>
+                  </div>
+                )}
+                <h3 className="text-xl font-semibold">
+                  {item.title || "Titre inconnu"}
+                </h3>
                 {item.description ? (
                   <p className="text-gray-600">{item.description}</p>
                 ) : (

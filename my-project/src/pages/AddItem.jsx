@@ -5,42 +5,49 @@ import Header from "../components/Header";
 export default function AddItem() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState(null); // سنخزن الملف نفسه هنا
-  const [imagePreview, setImagePreview] = useState(null); // لتخزين صورة المعاينة
+  const [image, setImage] = useState(null); // Contient la base64
+  const [imagePreview, setImagePreview] = useState(null); // Pour l’aperçu
   const navigate = useNavigate();
 
+  // Gérer l'import d'image et convertir en base64
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        setImage(reader.result); // Contenu base64
+        setImagePreview(reader.result); // Pour affichage immédiat
+      };
+
+      reader.readAsDataURL(file); // Convertir en base64
+    }
+  };
+
+  // Ajouter l’élément au localStorage
   const handleAddItem = (e) => {
     e.preventDefault();
     if (!title || !description || !image) return;
 
-    const newItem = { id: Date.now(), title, description, image };
+    const newItem = {
+      id: Date.now(),
+      title,
+      description,
+      image, // Déjà en base64
+    };
 
-    // استرجاع العناصر المخزنة مسبقًا
     const storedItems = JSON.parse(localStorage.getItem("items")) || [];
-
-    // إضافة العنصر الجديد إلى العناصر المخزنة
     storedItems.push(newItem);
-
-    // تخزين العناصر في localStorage
     localStorage.setItem("items", JSON.stringify(storedItems));
 
-    // إعادة تعيين الحقول
+    // Réinitialiser les champs
     setTitle("");
     setDescription("");
     setImage(null);
-    setImagePreview(null); // مسح المعاينة
+    setImagePreview(null);
 
-    // الانتقال إلى صفحة عرض العناصر
+    // Redirection vers la liste
     navigate("/items");
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0]; // الحصول على الملف المرفوع
-    if (file) {
-      const previewUrl = URL.createObjectURL(file); // إنشاء رابط مؤقت للصورة
-      setImage(file); // تخزين الملف نفسه
-      setImagePreview(previewUrl); // تخزين رابط المعاينة
-    }
   };
 
   return (
@@ -62,11 +69,10 @@ export default function AddItem() {
             onChange={(e) => setDescription(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-md h-24 resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
           />
-          
           <input
             type="file"
-            accept="image/*" // لتحديد نوع الملفات المسموح بها
-            onChange={handleImageChange} // عندما يختار المستخدم صورة
+            accept="image/*"
+            onChange={handleImageChange}
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           />
 
@@ -74,7 +80,7 @@ export default function AddItem() {
             <div className="mt-4">
               <img
                 src={imagePreview}
-                alt="Image Preview"
+                alt="Aperçu"
                 className="w-full h-48 object-cover rounded-md"
               />
             </div>
@@ -91,4 +97,3 @@ export default function AddItem() {
     </div>
   );
 }
-
